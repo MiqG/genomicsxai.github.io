@@ -6,17 +6,6 @@ on:
       - main
     paths-ignore:
       - 'data/zenodo.json'
-  workflow_dispatch:
-    inputs:
-      blog_post_paths:
-        description: "Space-separated list of content/blogs/*/index.md paths to sync with Zenodo"
-        required: false
-        type: string
-      zenodo_dry_run:
-        description: "If true, log intended Zenodo sync actions without creating records"
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   deploy:
@@ -106,19 +95,9 @@ jobs:
         id: changed_blogs
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ -n "${{ github.event.inputs.blog_post_paths }}" ]; then
-              read -r -a files <<< "${{ github.event.inputs.blog_post_paths }}"
-            else
-              echo "No blog_post_paths input provided; nothing to sync."
-              echo "count=0" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          else
-            BEFORE="${{ github.event.before }}"
-            AFTER="${{ github.sha }}"
-            mapfile -t files < <(git diff --name-only "$BEFORE" "$AFTER" -- 'content/blogs/*/index.md' | sort)
-          fi
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          mapfile -t files < <(git diff --name-only "$BEFORE" "$AFTER" -- 'content/blogs/*/index.md' | sort)
           if [ "${#files[@]}" -eq 0 ]; then
             echo "count=0" >> "$GITHUB_OUTPUT"
             exit 0
@@ -134,7 +113,6 @@ jobs:
           ZENODO_API_TOKEN: ${{ secrets.ZENODO_API_TOKEN }}
           ZENODO_COMMUNITY: ${{ secrets.ZENODO_COMMUNITY }}
           SITE_URL: https://genomicsxai.github.io
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.zenodo_dry_run == 'true' && '1' || '0' }}
         run: |
           if [ -z "$ZENODO_API_TOKEN" ]; then
             echo "ZENODO_API_TOKEN is not configured; skipping Zenodo DOI sync."
@@ -144,7 +122,7 @@ jobs:
           ruby .github/scripts/sync-zenodo-dois.rb $(tr '\n' ' ' < /tmp/changed-blog-posts.txt)
 
       - name: Commit Zenodo metadata
-        if: steps.changed_blogs.outputs.count != '0' && !(github.event_name == 'workflow_dispatch' && github.event.inputs.zenodo_dry_run == 'true')
+        if: steps.changed_blogs.outputs.count != '0'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
