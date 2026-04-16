@@ -28,10 +28,13 @@ date_accepted: 2026-02-19
 date: 2026-02-19
 
 doi: ""
+zenodo_url: ""
 revision_history:
   - version: 1
     date: 2026-02-19
     notes: "Initial welcome post"
+    doi: ""
+    zenodo_url: ""
 ---
 
 ![Genomics × AI](genomics_x_ai_title.png "width=400")

@@ -4,8 +4,19 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'data/zenodo.json'
   workflow_dispatch:
-    # Run manually to e.g. create discussions for existing posts, then deploy
+    inputs:
+      blog_post_paths:
+        description: "Space-separated list of content/blogs/*/index.md paths to sync with Zenodo"
+        required: false
+        type: string
+      zenodo_dry_run:
+        description: "If true, log intended Zenodo sync actions without creating records"
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   deploy:
@@ -90,6 +101,63 @@ jobs:
           echo "$OUT" > data/editors.json
           echo "Fetched $(jq length data/editors.json) editor(s)."
 
+      # 2.6. Sync Zenodo DOI metadata for accepted blog posts changed in this push
+      - name: Detect changed blog posts
+        id: changed_blogs
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ -n "${{ github.event.inputs.blog_post_paths }}" ]; then
+              read -r -a files <<< "${{ github.event.inputs.blog_post_paths }}"
+            else
+              echo "No blog_post_paths input provided; nothing to sync."
+              echo "count=0" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          else
+            BEFORE="${{ github.event.before }}"
+            AFTER="${{ github.sha }}"
+            mapfile -t files < <(git diff --name-only "$BEFORE" "$AFTER" -- 'content/blogs/*/index.md' | sort)
+          fi
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          printf '%s\n' "${files[@]}" > /tmp/changed-blog-posts.txt
+          echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
+          echo "Changed blog posts:"
+          cat /tmp/changed-blog-posts.txt
+
+      - name: Sync Zenodo DOI metadata
+        if: steps.changed_blogs.outputs.count != '0'
+        env:
+          ZENODO_API_TOKEN: ${{ secrets.ZENODO_API_TOKEN }}
+          ZENODO_COMMUNITY: ${{ secrets.ZENODO_COMMUNITY }}
+          SITE_URL: https://genomicsxai.github.io
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.zenodo_dry_run == 'true' && '1' || '0' }}
+        run: |
+          if [ -z "$ZENODO_API_TOKEN" ]; then
+            echo "ZENODO_API_TOKEN is not configured; skipping Zenodo DOI sync."
+            exit 0
+          fi
+          chmod +x .github/scripts/sync-zenodo-dois.rb
+          ruby .github/scripts/sync-zenodo-dois.rb $(tr '\n' ' ' < /tmp/changed-blog-posts.txt)
+
+      - name: Commit Zenodo metadata
+        if: steps.changed_blogs.outputs.count != '0' && !(github.event_name == 'workflow_dispatch' && github.event.inputs.zenodo_dry_run == 'true')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- data/zenodo.json; then
+            echo "No Zenodo metadata changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/zenodo.json
+          git commit -m "chore: sync Zenodo DOI metadata"
+          git push
+
       # 3. Build the Hugo site
       - name: Build
         run: hugo --minify
@@ -117,4 +185,3 @@ jobs:
           publish_branch: gh-pages
           # keep_files: true preserves the previews/ subdirectory across deploys
           keep_files: true
-

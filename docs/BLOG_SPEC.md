@@ -87,13 +87,18 @@ revision: 2
 date_submitted: 2026-02-01
 date_accepted: 2026-02-17
 doi: ""
+zenodo_url: ""
 revision_history:
   - version: 1
     date: 2026-02-01
     notes: "Initial submission"
+    doi: ""
+    zenodo_url: ""
   - version: 2
     date: 2026-02-10
     notes: "Revised per reviewer comments"
+    doi: ""
+    zenodo_url: ""
 ---
 ```
 
@@ -205,8 +210,12 @@ GitHub Discussions, categories:
 - RIS download (e.g. `static/bib/<post_id>.ris` when generated).  
 - Copy citation button.  
 - DOI link when available.
+- Zenodo link when available.
+- DOI version history from `revision_history` when revision entries include DOI metadata.
 
 Rendered via Hugo partial (e.g. `citation.html`).
+
+When the repository secret `ZENODO_API_TOKEN` is configured, the deploy workflow can mint/publish Zenodo records for accepted posts changed in the current push and store the resulting DOI metadata in `data/zenodo.json`. Frontmatter DOI fields remain valid as a manual override/fallback.
 
 ### 10.2 Machine-readable metadata
 
