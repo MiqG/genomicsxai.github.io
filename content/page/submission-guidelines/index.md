@@ -78,3 +78,147 @@ Editors aim to confirm, in a lightweight pass, that your post:
 * **Is complete in the basics** — opening summary via the `summary` shortcode, reasonable attribution, working links, and clean formatting  
 
 For the full framework (checklist, review outcomes, escalation, and time expectations), see **[Editorial Review (MVR)](https://genomicsxai.github.io/editorial-review/)**.
+
+---
+
+## Submit Your Blog Post
+
+Use the form below to upload your blog post and create a pull request automatically. You'll need a GitHub account.
+
+<div id="submit-form" class="submit-form">
+
+  <!-- Template download -->
+  <div class="submit-form__section submit-form__template-card">
+    <strong>Prepare your post first</strong>
+    <p>Write your post as a Markdown file following our template. Place images in the same folder.</p>
+    <a href="https://github.com/genomicsxai/genomicsxai.github.io/blob/main/docs/blog-post-template.md" target="_blank" rel="noopener" class="submit-form__btn submit-form__btn--secondary">Download blog post template</a>
+    <a href="https://github.com/genomicsxai/genomicsxai.github.io/blob/main/docs/BLOG_SPEC.md" target="_blank" rel="noopener" class="submit-form__link">View full frontmatter spec</a>
+  </div>
+
+  <!-- Auth -->
+  <div class="submit-form__section">
+    <div id="submit-form__auth-login">
+      <p>Sign in with your GitHub account to submit a post.</p>
+      <button type="button" id="submit-form__login-btn" class="submit-form__btn submit-form__btn--primary">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle; margin-right: 6px;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        Sign in with GitHub
+      </button>
+    </div>
+    <div id="submit-form__auth-user" hidden>
+      <span>Signed in as <strong id="submit-form__username"></strong></span>
+      <button type="button" id="submit-form__logout-btn" class="submit-form__btn submit-form__btn--link">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Form body (hidden until authenticated) -->
+  <div id="submit-form__body" hidden>
+
+    <!-- Upload index.md -->
+    <div class="submit-form__section">
+      <h3 class="submit-form__section-title">Upload your index.md</h3>
+      <div id="submit-form__drop-zone" class="submit-form__drop-zone">
+        <p>Drag &amp; drop your <code>index.md</code> file here, or click to browse</p>
+        <input type="file" id="submit-form__file-input" accept=".md" hidden>
+      </div>
+      <div id="submit-form__file-name" class="submit-form__file-name" hidden></div>
+      <div id="submit-form__parse-error" class="submit-form__field-error" hidden></div>
+    </div>
+
+    <!-- Frontmatter fields (hidden until file parsed) -->
+    <div id="submit-form__fields" class="submit-form__section" hidden>
+      <h3 class="submit-form__section-title">Review frontmatter</h3>
+      <p class="submit-form__help">Fields extracted from your file. Fix any errors before submitting.</p>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label submit-form__label--required" for="sf-title">Title</label>
+        <input type="text" id="sf-title" class="submit-form__input submit-form__editable">
+        <div id="sf-error-title" class="submit-form__field-error" hidden></div>
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label submit-form__label--required">Authors</label>
+        <div id="sf-authors-list"></div>
+        <button type="button" id="sf-add-author" class="submit-form__btn submit-form__btn--secondary submit-form__btn--small">+ Add author</button>
+        <div id="sf-error-authors" class="submit-form__field-error" hidden></div>
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label submit-form__label--required" for="sf-tags">Tags</label>
+        <input type="text" id="sf-tags" class="submit-form__input submit-form__editable" placeholder="genomics, AI, single-cell">
+        <span class="submit-form__help">Comma-separated</span>
+        <div id="sf-error-tags" class="submit-form__field-error" hidden></div>
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label submit-form__label--required">Scope</label>
+        <div class="submit-form__checkbox-group">
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-scope-protocols" class="submit-form__editable"> protocols</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-scope-tutorials" class="submit-form__editable"> tutorials</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-scope-negative-results" class="submit-form__editable"> negative-results</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-scope-discussions" class="submit-form__editable"> discussions</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-scope-insights" class="submit-form__editable"> insights</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-scope-ideas" class="submit-form__editable"> ideas</label>
+        </div>
+        <div id="sf-error-scope" class="submit-form__field-error" hidden></div>
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label">Audience</label>
+        <div class="submit-form__checkbox-group">
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-within-field" class="submit-form__editable"> within-field</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-general" class="submit-form__editable"> general</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-intro-to-field" class="submit-form__editable"> intro-to-field</label>
+        </div>
+        <div id="sf-error-audience" class="submit-form__field-error" hidden></div>
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label submit-form__label--required" for="sf-labs">Lab</label>
+        <input type="text" id="sf-labs" class="submit-form__input submit-form__editable" placeholder="Your Lab Name">
+        <div id="sf-error-labs" class="submit-form__field-error" hidden></div>
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label" for="sf-date">Date</label>
+        <input type="date" id="sf-date" class="submit-form__input" readonly>
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__label" for="sf-doi">DOI (optional)</label>
+        <input type="text" id="sf-doi" class="submit-form__input submit-form__editable" placeholder="10.xxxx/...">
+      </div>
+
+      <div class="submit-form__field">
+        <label class="submit-form__checkbox">
+          <input type="checkbox" id="sf-math" class="submit-form__editable"> Post uses LaTeX math equations
+        </label>
+      </div>
+    </div>
+
+    <!-- Image upload (hidden until file parsed) -->
+    <div id="submit-form__images-section" class="submit-form__section" hidden>
+      <h3 class="submit-form__section-title">Upload images (optional)</h3>
+      <p class="submit-form__help">Upload images referenced in your post. Max 10 MB per file, 50 MB total.</p>
+      <div id="submit-form__img-drop-zone" class="submit-form__drop-zone">
+        <p>Drag &amp; drop images here, or click to browse</p>
+        <input type="file" id="submit-form__img-input" accept="image/*" multiple hidden>
+      </div>
+      <div id="submit-form__image-previews" class="submit-form__image-previews"></div>
+    </div>
+
+    <!-- Submit -->
+    <div id="submit-form__actions" class="submit-form__section" hidden>
+      <button type="button" id="submit-form__submit-btn" class="submit-form__btn submit-form__btn--primary submit-form__btn--large" disabled>
+        Submit Blog Post
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div id="submit-form__progress" class="submit-form__section" hidden></div>
+
+    <!-- Error / Success -->
+    <div id="submit-form__error" class="submit-form__message submit-form__message--error" hidden></div>
+    <div id="submit-form__form-error" class="submit-form__message submit-form__message--error" hidden></div>
+    <div id="submit-form__success" class="submit-form__message submit-form__message--success" hidden></div>
+  </div>
+</div>
