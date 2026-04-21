@@ -56,7 +56,7 @@ Key takeaways:
 
 ## Overview
 
-[AlphaGenome](https://deepmind.google/discover/blog/alphagenome-a-foundation-model-for-genome-biology/) is a 450-million-parameter foundation model for genome biology released by Google DeepMind. It processes DNA sequences up to `1 Mb` and predicts thousands of genomic tracks, from chromatin accessibility to 3D contact maps, at base-pair resolution. The official implementation is in JAX; a [community PyTorch port](https://github.com/kundajelab/alphagenome-pytorch) makes the model accessible to the broader PyTorch ecosystem. We are contributors to that PyTorch port.
+[AlphaGenome](https://deepmind.google/discover/blog/alphagenome-a-foundation-model-for-genome-biology/) is a 450-million-parameter foundation model for genome biology released by Google DeepMind. It processes DNA sequences up to `1 Mb` and predicts thousands of genomic tracks, from chromatin accessibility to 3D contact maps, at base-pair resolution. The official implementation is in JAX; a [community PyTorch port](https://github.com/genomicsxai/alphagenome-pytorch) makes the model accessible to the broader PyTorch ecosystem. We are contributors to that PyTorch port.
 
 This post is a community reference: if you want to run AlphaGenome and are trying to figure out what fits on the GPU you have and how long it will take, this is where we share the numbers. We profile both the official JAX path (`alphagenome-jax`) and the community PyTorch port (`alphagenome-pytorch`, running in bf16) across seven NVIDIA GPUs under three workloads: inference, heads-only finetuning, and full-weights finetuning, each on real genomic data.
 
@@ -75,7 +75,7 @@ We ran controlled, reproducible benchmarks across the GPU tiers most commonly fo
 ### Models
 
 * `alphagenome-jax`: the official DeepMind JAX/Haiku implementation, compiled with `@jax.jit`. Finetuning uses code adapted from DeepMind's [`alphagenome_research`](https://github.com/google-deepmind/alphagenome_research) research-code release (the same backbone `alphagenome-ft` is built on), wrapped in a minimal custom training loop for these benchmarks
-* `alphagenome-pytorch`: the community [PyTorch port](https://github.com/kundajelab/alphagenome-pytorch) from the Kundaje Lab, compiled with `torch.compile` and bf16 autocast; finetuning runs are a straightforward training loop built directly on that implementation
+* `alphagenome-pytorch`: the community [PyTorch port](https://github.com/genomicsxai/alphagenome-pytorch) from the Kundaje Lab, compiled with `torch.compile` and bf16 autocast; finetuning runs are a straightforward training loop built directly on that implementation
 * [Borzoi](https://github.com/calico/borzoi) is also benchmarked at its supported sequence lengths (`262 kb` and `524 kb`) using [`borzoi-pytorch`](https://github.com/johahi/borzoi-pytorch) (pretrained weights `johahi/borzoi-replicate-0`) — a third-party community PyTorch reimplementation by Johannes Hingerl (Gagneur lab, TU Munich) — **not** the original Calico TensorFlow release, so that the Borzoi and AlphaGenome-PyTorch numbers share the same framework stack; see [Also published: Borzoi](#also-published-borzoi)
 
 ### GPUs
@@ -361,7 +361,7 @@ A few caveats worth flagging explicitly:
 * Published CSV data: [`published/data/`](https://github.com/XinmingTu/genomic-model-profiling/tree/main/published/data)
 * Platform metadata: [`published/platforms/`](https://github.com/XinmingTu/genomic-model-profiling/tree/main/published/platforms)
 * Apples-to-apples audit: [`docs/alphagenome_jax_vs_pytorch.md`](https://github.com/XinmingTu/genomic-model-profiling/blob/main/docs/alphagenome_jax_vs_pytorch.md)
-* AlphaGenome PyTorch port: [github.com/kundajelab/alphagenome-pytorch](https://github.com/kundajelab/alphagenome-pytorch)
+* AlphaGenome PyTorch port: [github.com/genomicsxai/alphagenome-pytorch](https://github.com/genomicsxai/alphagenome-pytorch)
 * AlphaGenome official announcement: [Google DeepMind blog post](https://deepmind.google/discover/blog/alphagenome-a-foundation-model-for-genome-biology/)
 
 ## Acknowledgements
