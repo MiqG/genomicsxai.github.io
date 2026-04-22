@@ -94,7 +94,7 @@ jobs:
           printf '%s\n' "${files[@]}" > /tmp/changed-blog-posts.txt
           accepted_count=0
           while IFS= read -r path; do
-            status=$(ruby -e 'require "yaml"; raw = File.read(ARGV[0]); match = raw.match(/\A---\s*\n(.*?)\n---\s*\n/m) or abort("Missing frontmatter in #{ARGV[0]}"); fm = YAML.safe_load(match[1], permitted_classes: [Date, Time], aliases: true) || {}; print fm["status"].to_s' "$path")
+            status=$(ruby -e 'require "yaml"; require "date"; raw = File.read(ARGV[0]); match = raw.match(/\A---\s*\n(.*?)\n---\s*\n/m) or abort("Missing frontmatter in #{ARGV[0]}"); fm = YAML.safe_load(match[1], permitted_classes: [Date, Time], aliases: true) || {}; print fm["status"].to_s' "$path")
             if [ "$status" = "accepted" ]; then
               accepted_count=$((accepted_count + 1))
             fi
