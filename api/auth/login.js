@@ -5,7 +5,9 @@ export default function handler(req, res) {
     return res.status(500).json({ error: 'GITHUB_CLIENT_ID not configured' });
   }
 
-  const redirectUri = `${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : process.env.SITE_URL}/api/auth/callback`;
+  const baseUrl = process.env.OAUTH_BASE_URL
+    || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? 'https://' + process.env.VERCEL_PROJECT_PRODUCTION_URL : process.env.SITE_URL);
+  const redirectUri = `${baseUrl}/api/auth/callback`;
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
