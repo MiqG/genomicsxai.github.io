@@ -1,8 +1,9 @@
 post_id: "YYYY-NNN"
 title: "Your Post Title"
-# Optional: image filename in the same folder
-# image: "your-image.png"
-# Enable KaTeX for inline/block math (e.g. $10^{-K}$)
+
+# Optional: image filename "your-image.png" in the same folder
+
+# Optional: Enable KaTeX for inline/block math (e.g. $10^{-K}$)
 math: true
 
 # Author(s): list of names (used for /authors/<slug>/)
@@ -19,7 +20,7 @@ authors_display:
 
 editor: "Editor Name"
 
-#Add any number of tags which are searchable on the blog homepage. See [there]() to get some inspiration
+# Add any number of tags. They're searchable on the blog homepage. See https://genomicsxai.github.io/tags/ for examples.
 tags: ["genomics", "causal-inference"]
 categories: ["Blog Post"]
 
