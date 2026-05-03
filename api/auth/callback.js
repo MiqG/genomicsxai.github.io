@@ -1,23 +1,11 @@
-// Vercel serverless function: exchange GitHub OAuth code for access token
-import crypto from 'node:crypto';
-
-function parseCookies(header) {
-  const out = {};
-  if (!header) return out;
-  header.split(/;\s*/).forEach((pair) => {
-    const i = pair.indexOf('=');
-    if (i > 0) out[pair.slice(0, i)] = pair.slice(i + 1);
-  });
-  return out;
-}
-
-function timingSafeEqualStr(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
-  return crypto.timingSafeEqual(ab, bb);
-}
+// Vercel serverless function: exchange GitHub OAuth code for access token,
+// then store the token in an HttpOnly cookie scoped to the API origin.
+import {
+  parseCookies,
+  timingSafeEqualStr,
+  setSessionCookie,
+  clearStateCookieHeader,
+} from '../_lib/auth.js';
 
 export default async function handler(req, res) {
   const { code, state } = req.query;
@@ -32,8 +20,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid OAuth state' });
   }
 
-  // One-shot cookie: clear it as soon as it has been validated.
-  const clearStateCookie = 'oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/api/auth; Max-Age=0';
+  const clearStateCookie = clearStateCookieHeader();
 
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
@@ -49,36 +36,27 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-      }),
+      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
     });
 
     const data = await response.json();
 
-    if (data.error) {
+    if (data.error || !data.access_token) {
       res.setHeader('Set-Cookie', clearStateCookie);
-      return res.status(400).json({ error: data.error_description || data.error });
+      return res.status(400).json({
+        error: data.error_description || data.error || 'No access token in response',
+      });
     }
 
+    // Store token in an HttpOnly cookie scoped to /api on the auth origin.
+    // Cross-origin XHR from the form sends this cookie when credentials: 'include' is set.
+    res.setHeader('Set-Cookie', [
+      `gh_session=${data.access_token}; HttpOnly; Secure; SameSite=None; Path=/api; Max-Age=28800`,
+      clearStateCookie,
+    ]);
+
     const siteUrl = process.env.SITE_URL || 'https://genomicsxai.github.io';
-    res.setHeader('Set-Cookie', clearStateCookie);
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
-    // Safely embed token + redirect target via JSON.stringify to prevent script injection.
-    const tokenJs = JSON.stringify(data.access_token || '');
-    const redirectJs = JSON.stringify(`${siteUrl}/submission-guidelines/#submit-form`);
-    res.send(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Authenticating...</title></head>
-<body>
-<p>Signing in... you will be redirected shortly.</p>
-<script>
-  sessionStorage.setItem('gh_token', ${tokenJs});
-  window.location.href = ${redirectJs};
-</script>
-</body></html>`);
+    res.redirect(`${siteUrl}/submission-guidelines/#submit-form`);
   } catch (err) {
     res.setHeader('Set-Cookie', clearStateCookie);
     res.status(500).json({ error: 'Failed to exchange code for token' });
