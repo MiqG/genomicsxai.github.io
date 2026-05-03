@@ -820,7 +820,8 @@
         Progress.complete(4);
 
         // Show success
-        this.showSuccess(pr.html_url);
+        this.showSuccess(pr.html_url, pr.number);
+        this.pollForPreview(pr.number);
 
       } catch (e) {
         Progress.showError(e.message);
@@ -831,15 +832,51 @@
       }
     },
 
-    showSuccess: function (prUrl) {
+    showSuccess: function (prUrl, prNumber) {
       var el = $('#submit-form__success');
       if (el) {
         el.innerHTML =
           '<strong>Submission successful!</strong> ' +
-          'Your pull request has been created: <a href="' + prUrl + '" target="_blank" rel="noopener">' + prUrl + '</a>';
+          'Your pull request has been created: <a href="' + prUrl + '" target="_blank" rel="noopener">PR #' + prNumber + '</a>.<br>' +
+          '<span id="submit-form__preview-status">Building a live preview of your post — this usually takes 1–3 minutes.</span>';
         show(el);
       }
       hide($('#submit-form__actions'));
+    },
+
+    pollForPreview: async function (prNumber) {
+      var maxAttempts = 30; // ~5 minutes at 10s intervals
+      var statusEl = function () { return $('#submit-form__preview-status'); };
+      for (var i = 0; i < maxAttempts; i++) {
+        await new Promise(function (r) { setTimeout(r, 10000); });
+        try {
+          var comments = await GitHubAPI.request(
+            'GET',
+            '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/issues/' + prNumber + '/comments'
+          );
+          for (var j = 0; j < comments.length; j++) {
+            var c = comments[j];
+            if (c.user && c.user.login === 'github-actions[bot]' && c.body && /Preview URL/i.test(c.body)) {
+              var match = c.body.match(/https?:\/\/[^\s)]+\/previews\/pr-\d+\/?/);
+              if (match) {
+                var s = statusEl();
+                if (s) {
+                  s.innerHTML =
+                    'Live preview is ready: <a href="' + match[0] + '" target="_blank" rel="noopener">' + match[0] + '</a>';
+                }
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore transient errors and keep polling
+        }
+      }
+      var s = statusEl();
+      if (s) {
+        s.innerHTML =
+          'Preview is taking longer than usual. Check the <a href="https://github.com/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/pull/' + prNumber + '" target="_blank" rel="noopener">PR comments</a> for the preview link.';
+      }
     },
   };
 
