@@ -8,11 +8,15 @@
     DEFAULT_BRANCH: 'main',
     BLOGS_PATH: 'content/blogs',
     API_BASE: 'https://api.github.com',
-    // GitHub App's public Client ID. Safe to embed in client-side code —
+    // OAuth App's public Client ID. Safe to embed in client-side code —
     // it's not a secret. (The matching client_secret is what's confidential,
     // and Device Flow doesn't need one.)
-    // Find this on the App's settings page: https://github.com/organizations/genomicsxai/settings/apps
-    GITHUB_CLIENT_ID: 'Iv23liQAcs7DRzP92ZZz',
+    // We use an OAuth App (not a GitHub App) because GitHub Apps cannot
+    // create forks via the API — forking is a user-account action and isn't
+    // in any GitHub App permission list. OAuth App with `public_repo` scope
+    // can fork, which the submission flow requires.
+    // Find this on the App's settings page: https://github.com/organizations/genomicsxai/settings/applications
+    GITHUB_CLIENT_ID: 'Ov23lipXrX6z7KCV4d2c',
     // CORS bridge for GitHub's OAuth endpoints. GitHub doesn't send
     // Access-Control-Allow-Origin on /login/device/code or /login/oauth/access_token,
     // so we proxy them through Vercel. The proxy holds no secrets and no state —
