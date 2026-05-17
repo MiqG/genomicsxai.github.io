@@ -120,10 +120,24 @@ Lab of the writer.
 
 Writer of the post. Author pages at `/authors/<slug>/` (affiliation, ORCID, website, list of posts).
 
+### 4.7 Categories
+
+Determines which homepage pill filter a post appears under.
+
+Supported values: **Announcement**, **Blog Post**, **Tutorial**, **Perspective**.
+
+- `Announcement` — editorial and community announcements (appears under the **Announcements** pill)
+- `Blog Post` — standard research write-ups (appears under the **Blogs** pill)
+- `Tutorial` — step-by-step technical guides (appears under the **Tutorials** pill)
+- `Perspective` — opinion pieces, field commentary (appears under the **Perspectives** pill)
+
+The homepage pill bar reads the `categories` taxonomy only, not `scope`. A post with `scope: ["tutorials"]` but `categories: ["Blog Post"]` will appear under the Blogs pill, not Tutorials.
 
 **Implementation:** Hugo taxonomies (`tags`, `scope`, `audience`, `labs`, `authors`, `categories`) + list/term layouts + `data/authors.yaml` for author profiles.
 
-## 6. Peer review state machine
+**Implementation:** Hugo taxonomies (`tags`, `scope`, `audience`, `labs`, `authors`, `categories`) + list/term layouts + `data/authors.yaml` for author profiles.
+
+## 5. Peer review state machine
 
 | State | Trigger | Tool |
 |-------|---------|------|
@@ -134,7 +148,7 @@ Writer of the post. Author pages at `/authors/<slug>/` (affiliation, ORCID, webs
 | published | CI deploys | GitHub Actions |
 
 
-## 7. Governance
+## 6. Governance
 
 1. Author writes a post using the predefined template.  
 2. Lab-internal review.  
@@ -144,16 +158,16 @@ Writer of the post. Author pages at `/authors/<slug>/` (affiliation, ORCID, webs
 6. Editors merge the post.
 
 
-## 8. CI/CD requirements
+## 7. CI/CD requirements
 
-### 8.1 On PR
+### 7.1 On PR
 
 - Hugo build must pass (with theme submodule).  
 - Required frontmatter fields validated.  
 - Links/assets validated (optional).  
 - Optional: reproducibility checks.
 
-### 8.2 On merge
+### 7.2 On merge
 
 - Deploy to GitHub Pages (via `github-pages` environment).  
 - Optional: create release tag.
@@ -161,9 +175,9 @@ Writer of the post. Author pages at `/authors/<slug>/` (affiliation, ORCID, webs
 **Implementation:** GitHub Actions (e.g. `pr-build`, `frontmatter`, `links`, `deploy`).
 
 
-## 9. Forum and public discussion
+## 8. Forum and public discussion
 
-### 9.1 Global forum
+### 8.1 Global forum
 
 GitHub Discussions, categories:
 
@@ -172,7 +186,7 @@ GitHub Discussions, categories:
 - Post Discussions  
 - Calls for Posts  
 
-### 9.2 Per-blog discussion
+### 8.2 Per-blog discussion
 
 - Each post has a “Discuss this post” link → GitHub Discussions (e.g. Post Discussions category).  
 - Optional: embedded comments (e.g. Giscus).
@@ -180,9 +194,9 @@ GitHub Discussions, categories:
 **Implementation:** Hugo partial (e.g. `discuss.html`) + Discussions URL.
 
 
-## 10. Citation mechanism
+## 9. Citation mechanism
 
-### 10.1 Citation box (per post)
+### 9.1 Citation box (per post)
 
 - BibTeX download (e.g. `static/bib/<post_id>.bib` when generated).  
 - RIS download (e.g. `static/bib/<post_id>.ris` when generated).  
@@ -191,18 +205,18 @@ GitHub Discussions, categories:
 
 Rendered via Hugo partial (e.g. `citation.html`).
 
-### 10.2 Machine-readable metadata
+### 9.2 Machine-readable metadata
 
 - JSON-LD `BlogPosting` schema.  
 - Generated via Hugo partial (e.g. `jsonld.html`).
 
-### 10.3 DOI (optional, Phase 2)
+### 9.3 DOI (optional, Phase 2)
 
 - GitHub Release on acceptance; archive via Zenodo; store DOI in frontmatter.
 
 
 
-## 11. Navigation structure
+## 10. Navigation structure
 
 Main menu:
 
@@ -215,9 +229,9 @@ Main menu:
 Implemented via Hugo `config.toml` menu + theme layout.
 
 
-## 12. Development tracking
+## 11. Development tracking
 
-### 12.1 MVP checklist
+### 11.1 MVP checklist
 
 - [x] PR-based submission workflow  
 - [x] Tags taxonomy (tags, scope, audience, lab, author, categories)  
@@ -230,7 +244,7 @@ Implemented via Hugo `config.toml` menu + theme layout.
 - [x] Navigation (Home, Forum, Editorial Board, Submission Guidelines, Policies)  
 
 
-### 12.2 Phase 2 enhancements
+### 11.2 Phase 2 enhancements
 
 - Automated DOI minting (e.g. Zenodo + release).  
 - Reproducibility CI (e.g. notebook execution).  
