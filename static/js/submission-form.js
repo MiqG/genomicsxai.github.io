@@ -385,6 +385,13 @@
         span.className = 'submit-form__image-name';
         span.textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
 
+        var insertBtn = document.createElement('button');
+        insertBtn.type = 'button';
+        insertBtn.className = 'submit-form__image-insert';
+        insertBtn.dataset.filename = self.sanitizeName(f.name);
+        insertBtn.title = 'Insert at cursor in body';
+        insertBtn.textContent = 'Insert';
+
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'submit-form__image-remove';
@@ -394,6 +401,7 @@
 
         thumb.appendChild(img);
         thumb.appendChild(span);
+        thumb.appendChild(insertBtn);
         thumb.appendChild(btn);
         container.appendChild(thumb);
       });
@@ -401,6 +409,24 @@
         btn.addEventListener('click', function () {
           self.removeFile(parseInt(btn.dataset.index, 10));
           self.renderPreviews();
+        });
+      });
+      $$('.submit-form__image-insert').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var filename = btn.dataset.filename;
+          var ta = $('#submit-form__body-input');
+          if (!ta || !filename) return;
+          var placeholder = '[image: ' + filename + ']';
+          var start = ta.selectionStart || 0;
+          var end = ta.selectionEnd || 0;
+          var before = ta.value.slice(0, start);
+          var after = ta.value.slice(end);
+          var prefix = (before.length === 0 || before.endsWith('\n')) ? '' : '\n';
+          ta.value = before + prefix + placeholder + '\n' + after;
+          var newPos = before.length + prefix.length + placeholder.length + 1;
+          ta.focus();
+          ta.setSelectionRange(newPos, newPos);
+          FormController.revalidate();
         });
       });
     },
@@ -529,6 +555,13 @@
 
       return lines.join('\n');
     },
+
+    expandImageKeywords: function (body) {
+      return (body || '').replace(/\[image:\s*([a-z0-9._-]+)\s*\]/gi, function (_m, name) {
+        var clean = name.toLowerCase();
+        return '![' + clean + '](' + clean + ')';
+      });
+    },
   };
 
   // ── FormController ──
@@ -581,6 +614,10 @@
       // File upload
       var fileInput = $('#submit-form__file-input');
       if (fileInput) fileInput.addEventListener('change', function (e) { self.onFileSelected(e); });
+
+      // Start-blank button (manual fill)
+      var startBlankBtn = $('#submit-form__start-blank-btn');
+      if (startBlankBtn) startBlankBtn.addEventListener('click', function () { self.startBlank(); });
 
       var dropZone = $('#submit-form__drop-zone');
       if (dropZone) {
@@ -720,9 +757,11 @@
         }
         self.parsed = result;
         self.populateFields(result.frontmatter);
+        var bodyInput = $('#submit-form__body-input');
+        if (bodyInput) bodyInput.value = result.body || '';
         self.revalidate();
         show($('#submit-form__fields'));
-        show($('#submit-form__images-section'));
+        show($('#submit-form__body-section'));
         show($('#submit-form__actions'));
         hide($('#submit-form__parse-error'));
         // Show file name
@@ -730,6 +769,18 @@
         if (nameEl) { nameEl.textContent = file.name; show(nameEl); }
       };
       reader.readAsText(file);
+    },
+
+    startBlank: function () {
+      this.parsed = { frontmatter: {}, body: '', rawYaml: '' };
+      this.populateFields({});
+      var bodyInput = $('#submit-form__body-input');
+      if (bodyInput) bodyInput.value = '';
+      show($('#submit-form__fields'));
+      show($('#submit-form__body-section'));
+      show($('#submit-form__actions'));
+      hide($('#submit-form__parse-error'));
+      this.revalidate();
     },
 
     onFileSelected: function (e) {
@@ -937,7 +988,9 @@
           if (!found) fm.image = '';
         }
 
-        var body = this.parsed ? this.parsed.body : '';
+        var bodyInput = $('#submit-form__body-input');
+        var rawBody = bodyInput ? (bodyInput.value || '') : (this.parsed ? this.parsed.body : '');
+        var body = MarkdownGen.expandImageKeywords(rawBody);
         var mdContent = MarkdownGen.generate(fm, body);
         var branchName = 'blog/' + this.postId;
 

@@ -1,11 +1,17 @@
 <div id="submit-form" class="submit-form">
 
-  <!-- Template download -->
+  <!-- Template / start -->
   <div class="submit-form__section submit-form__template-card">
-    <strong>Prepare your post first</strong>
-    <p>Write your post as a Markdown file following our template. Place images in the same folder.</p>
-    <a href="/blog-post-template.md" download="blog-post-template.md" class="submit-form__btn submit-form__btn--secondary">Download blog post template</a>
-    <a href="https://github.com/genomicsxai/genomicsxai.github.io/blob/main/docs/BLOG_SPEC.md" target="_blank" rel="noopener" class="submit-form__link">View full frontmatter spec</a>
+    <strong>Prepare your post</strong>
+    <p>Two ways to start. Either way, you'll review frontmatter, edit your post text, and add images in the form below before submitting.</p>
+    <div class="submit-form__template-actions">
+      <a href="/blog-post-template.md" download="blog-post-template.md" class="submit-form__btn submit-form__btn--secondary">Download blog post template</a>
+      <button type="button" id="submit-form__start-blank-btn" class="submit-form__btn submit-form__btn--secondary">Fill in the form manually</button>
+    </div>
+    <p class="submit-form__help">
+      Downloading the template lets you draft offline and pre-fill the fields by uploading <code>index.md</code> below.
+      Filling in the form manually opens the same fields blank so you can write directly here.
+    </p>
   </div>
 
   <!-- Auth -->
@@ -53,7 +59,7 @@
     <!-- Frontmatter fields (hidden until file parsed) -->
     <div id="submit-form__fields" class="submit-form__section" hidden>
       <h3 class="submit-form__section-title">Review frontmatter</h3>
-      <p class="submit-form__help">Fields extracted from your file. Fix any errors before submitting.</p>
+      <p class="submit-form__help">Edit fields below. If you uploaded a template, they're pre-filled from your file; otherwise fill them in directly. Fix any errors before submitting.</p>
 
       <div class="submit-form__field">
         <label class="submit-form__label submit-form__label--required" for="sf-title">Title</label>
@@ -121,15 +127,29 @@
       </div>
     </div>
 
-    <!-- Image upload (hidden until file parsed) -->
-    <div id="submit-form__images-section" class="submit-form__section" hidden>
-      <h3 class="submit-form__section-title">Upload images (optional)</h3>
-      <p class="submit-form__help">Upload images referenced in your post. Max 10 MB per file, 50 MB total.</p>
-      <div id="submit-form__img-drop-zone" class="submit-form__drop-zone">
-        <p>Drag &amp; drop images here, or click to browse</p>
-        <input type="file" id="submit-form__img-input" accept="image/*" multiple hidden>
+    <!-- Write your post (hidden until file parsed or manual start) -->
+    <div id="submit-form__body-section" class="submit-form__section" hidden>
+      <h3 class="submit-form__section-title">Write your post</h3>
+      <p class="submit-form__help">
+        Write your post text below. If you uploaded a template, the body is pre-filled from your file.
+        To embed an image, upload it under the editor and click <strong>Insert</strong> on the thumbnail —
+        a placeholder like <code>[image: figure1.png]</code> drops in at your cursor and becomes a proper
+        image on the published page. Headings (<code>##</code>), lists, and links use standard Markdown.
+      </p>
+      <textarea id="submit-form__body-input"
+                class="submit-form__editable submit-form__body-textarea"
+                placeholder="## Summary&#10;&#10;A one-paragraph overview of your post.&#10;&#10;## Background&#10;&#10;Write here. Click Insert on an uploaded image below to embed it like this: [image: filename.png]."></textarea>
+
+      <!-- Image upload, co-located with the body -->
+      <div id="submit-form__images-subsection" class="submit-form__body-images">
+        <h4 class="submit-form__subsection-title">Images</h4>
+        <p class="submit-form__help">Upload images you want to embed. Max 10 MB per file, 50 MB total. Use the <strong>Insert</strong> button on each thumbnail to drop a placeholder into the text above.</p>
+        <div id="submit-form__img-drop-zone" class="submit-form__drop-zone">
+          <p>Drag &amp; drop images here, or click to browse</p>
+          <input type="file" id="submit-form__img-input" accept="image/*" multiple hidden>
+        </div>
+        <div id="submit-form__image-previews" class="submit-form__image-previews"></div>
       </div>
-      <div id="submit-form__image-previews" class="submit-form__image-previews"></div>
     </div>
 
     <!-- Submit -->
