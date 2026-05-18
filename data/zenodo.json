@@ -96,11 +96,11 @@
   },
   "2026-006": {
     "conceptrecid": "20273968",
-    "current_revision": 1,
-    "current_doi": "10.5281/zenodo.20273969",
-    "current_doi_url": "https://doi.org/10.5281/zenodo.20273969",
-    "current_zenodo_url": "https://zenodo.org/records/20273969",
-    "current_deposition_id": 20273969,
+    "current_revision": 2,
+    "current_doi": "10.5281/zenodo.20276917",
+    "current_doi_url": "https://doi.org/10.5281/zenodo.20276917",
+    "current_zenodo_url": "https://zenodo.org/records/20276917",
+    "current_deposition_id": 20276917,
     "revisions": {
       "1": {
         "doi": "10.5281/zenodo.20273969",
@@ -110,6 +110,15 @@
         "record_id": 20273969,
         "date": "2026-05-18",
         "notes": "Initial workflow validation post"
+      },
+      "2": {
+        "doi": "10.5281/zenodo.20276917",
+        "doi_url": "https://doi.org/10.5281/zenodo.20276917",
+        "zenodo_url": "https://zenodo.org/records/20276917",
+        "deposition_id": 20276917,
+        "record_id": 20276917,
+        "date": "2026-05-18",
+        "notes": "Second workflow validation revision"
       }
     }
   }
