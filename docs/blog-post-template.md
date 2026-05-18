@@ -50,10 +50,14 @@ date_accepted:
 date: 2026-02-19
 
 doi: ""
+zenodo_url: ""
 revision_history:
   - version: 1
     date: 2026-02-19
     notes: "Initial submission"
+    # Optional: version-specific DOI / Zenodo record link
+    doi: ""
+    zenodo_url: ""
 ---
 
 {{< summary >}}
@@ -74,6 +78,8 @@ Your content here. Use standard Markdown. For images in the post folder:
 
 ...
 ```
+
+Maintainers can also populate DOI metadata automatically at deploy time via `data/zenodo.json` when `ZENODO_API_TOKEN` is configured in GitHub Actions.
 
 See [BLOG_SPEC.md](./BLOG_SPEC.md) for full frontmatter and tag options.
 
