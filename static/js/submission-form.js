@@ -916,12 +916,9 @@
       try {
         var posts = await UpdateMode.listMyPosts(this.user.login);
         if (!posts.length) {
-          sel.innerHTML = '<option value="">No posts found for @' + this.user.login + '</option>';
-          if (help) help.textContent = "We couldn't find any published posts attributed to your GitHub account. If this looks wrong, contact an editor.";
+          sel.innerHTML = "<option value=\"\">You don't have any previous posts</option>";
+          if (help) help.textContent = "We couldn't find any published posts attributed to @" + this.user.login + '. Submit a new post first, or contact an editor if this looks wrong.';
           sel.disabled = true;
-          // Disable the update option entirely
-          var updateRadio = $('#sf-mode-update');
-          if (updateRadio) updateRadio.disabled = true;
           return;
         }
         sel.innerHTML = '<option value="">— Choose a post —</option>' +
@@ -1108,7 +1105,7 @@
         var modeNew = $('#sf-mode-new');
         if (modeNew) modeNew.checked = true;
         var modeUpdate = $('#sf-mode-update');
-        if (modeUpdate) { modeUpdate.checked = false; modeUpdate.disabled = false; }
+        if (modeUpdate) modeUpdate.checked = false;
         var updateOpts = $('#submit-form__update-options');
         if (updateOpts) hide(updateOpts);
         UpdateMode.reset();

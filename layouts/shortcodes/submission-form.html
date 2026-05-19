@@ -49,14 +49,21 @@
     <div id="submit-form__mode-chooser" class="submit-form__section submit-form__mode-chooser">
       <h3 class="submit-form__section-title">What are you submitting?</h3>
       <div class="submit-form__radio-group">
-        <label class="submit-form__radio">
-          <input type="radio" name="sf-mode" value="new" id="sf-mode-new" checked>
-          <span>Submit a new post</span>
-        </label>
-        <label class="submit-form__radio">
-          <input type="radio" name="sf-mode" value="update" id="sf-mode-update">
-          <span>Update one of my previous posts</span>
-        </label>
+        <div class="submit-form__radio-item">
+          <label class="submit-form__radio">
+            <input type="radio" name="sf-mode" value="new" id="sf-mode-new" checked>
+            <span>Submit a new post</span>
+          </label>
+        </div>
+        <div class="submit-form__radio-item">
+          <label class="submit-form__radio">
+            <input type="radio" name="sf-mode" value="update" id="sf-mode-update">
+            <span class="submit-form__radio-label">
+              Update one of my previous posts
+              <span class="submit-form__radio-note">For posts you previously published under this GitHub account.</span>
+            </span>
+          </label>
+        </div>
       </div>
 
       <div id="submit-form__update-options" class="submit-form__update-options" hidden>
