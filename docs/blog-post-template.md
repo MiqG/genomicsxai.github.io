@@ -1,14 +1,10 @@
-# Blog post template
-
-Copy this into `content/blogs/YYYY-NNN/index.md` (replace YYYY-NNN with the next post id, e.g. 2026-002). Fill in the frontmatter and replace the body with your post.
-
-```markdown
 ---
 post_id: "YYYY-NNN"
 title: "Your Post Title"
-# Optional: image filename in the same folder
-# image: "your-image.png"
-# Enable KaTeX for inline/block math (e.g. $10^{-K}$)
+
+# Optional: image filename "your-image.png" in the same folder
+
+# Optional: Enable KaTeX for inline/block math (e.g. $10^{-K}$)
 math: true
 
 # Author(s): list of names (used for /authors/<slug>/)
@@ -25,7 +21,12 @@ authors_display:
 
 editor: "Editor Name"
 
-#Add any number of tags which are searchable on the blog homepage. See [there]() to get some inspiration
+# Set automatically by the submission form to the GitHub login of the original
+# submitter. Used by the form to surface "Update one of my previous posts" for
+# the same account on later revisions. Safe to omit when authoring manually.
+# submitter_github: "your-github-login"
+
+# Add any number of tags. They're searchable on the blog homepage. See https://genomicsxai.github.io/tags/ for examples.
 tags: ["genomics", "causal-inference"]
 # Category determines which homepage pill filter the post appears under.
 # Supported values: "Announcement", "Blog Post", "Tutorial", "Perspective"
@@ -68,7 +69,7 @@ Include a high-level summary of your post here. Alternatively editors can write 
 
 ---
 
-## Introduction
+## Introduction (or other name for your first section)
 
 Your content here. Use standard Markdown. For images in the post folder:
 
