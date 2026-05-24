@@ -53,7 +53,7 @@ In this post, we share that development process: preprocessing the data, buildin
 
 For this fine-tuning example, we chose two RNA-seq samples from López-Oreja (2023): one carrying the SF3B1 K700E cancer driver mutation and one without it. This mutation is known to promote the recognition of cryptic splice sites, so we expected it to affect the RNA-seq modalities considered here. In this blogpost we only use these data for code development purposes of multimodal learning, but we will delve into the sequence determinants of this misregulated modulation in the next blogpost on this topic.
 
-![Overview of AlphaGenome's splicing heads](alphagenome_rna_heads.png "width=1000")
+![Overview of AlphaGenome's splicing heads](alphagenome_rna_heads.png "width=800")
 
 All code, model adaptations, and pipelines used for this blog post are available.
 
@@ -70,7 +70,7 @@ AlphaGenome's preprocessing code is not publicly available, though the key steps
 - **Splice site usage** is computed from the BAM using our custom script `compute_ssu.py`, equivalent to [`SpliSER`](). For each splice site supported by at least one junction, usage is estimated as the fraction of reads supporting that site relative to reads that skip it. Output: zstd-compressed parquet files.
 - **Splice junction counts** are available directly from STAR at alignment time, or can be extracted post-hoc from the BAM using our custom script `get_star_junctions.py`. Output: tab-separated files.
 
-![Data preprocessing workflow](data_prep_workflow.png "width=1000")
+![Data preprocessing workflow](data_prep_workflow.png "width=800")
 
 To make sure our custom implementations to compute splice junction counts and splice site usage matched how STAR and SpliSER calculate them respectively, we ran a comparison on chromosome 1 on our samples.
 
@@ -78,7 +78,7 @@ In both cases we observe a Pearson correlation of 1 (for splice junction counts 
 
 Both implementations were also highly efficient in runtime, with `get_star_junctions.py` requiring ~10s and ~150 MB per sample, and `compute_ssu.py` requiring ~20s and ~200 MB per sample compared to SpliSER's ~600s and ~100 MB.
 
-![Benchmark splice junction counting and computing splice site usage](benchmark_juncs_and_ssu.png "width=1000")
+![Benchmark splice junction counting and computing splice site usage](benchmark_juncs_and_ssu.png "width=450")
 
 ## Data loading and on-the-fly normalization
 
@@ -92,7 +92,7 @@ All four tracks are loaded jointly for each genomic interval and normalized on t
 
 **Splice junction counts** from STAR are CPM-normalized using the total mapped reads per sample, clipped at the 99.99th percentile, and then mean-scaled so that the typical non-zero value is close to 1. Junctions are assembled into a donor × acceptor count matrix, with forward and reverse strand channels interleaved across samples.
 
-![Normalizing training data on-the-fly](data_loading_normalization.png "width=1000")
+![Normalizing training data on-the-fly](data_loading_normalization.png "width=600")
 
 ## First time never works
 
@@ -100,7 +100,7 @@ As a first sanity check, we verified that the model could overfit a single genom
 
 The test was useful precisely because it failed. The splice site probability heads did not overfit, and the splice junction heads did not learn at all. The next two sections trace what was wrong with each and how we fixed it.
 
-![First attempt to overfit a single interval](first_attempt.png "width=1000")
+![First attempt to overfit a single interval](first_attempt.png "width=900")
 
 ## Initializing splice site heads with pretrained weights facilitates single-batch overfitting
 
@@ -110,7 +110,7 @@ We explored three factors that could affect overfitting on the single interval: 
 
 Initializing from pretrained weights enabled clean overfitting regardless of whether GTF sites or loss segmentation were used. When starting from random weights, loss segmentation had a secondary effect: higher overall loss but faster overfitting, with or without the GTF augmentation.
 
-![Debugging splice site head](debug_splice_head.png "widht=1000")
+![Debugging splice site head](debug_splice_head.png "width=900")
 
 ## Why the junction head could not learn
 
@@ -122,7 +122,7 @@ Cross-referencing with the original JAX implementation and reaching out to the a
 
 With the fix in place, the randomly initialized junction head overfits successfully when splice site positions are taken from the target junctions, set via `--junction-position-source annotated` (the default). 
 
-![Debugging splice junction head random initialization](splice_junctions_debug-init.png "width=1000")
+![Debugging splice junction head random initialization](splice_junctions_debug-init.png "width=800")
 
 Using predicted positions (`--junction-position-source predicted`) exposed a further issue: pretrained-weight initialization collapsed while random initialization still learned. The pretrained head was optimized alongside a dense, tissue-diverse set of splice site positions from pretraining; positions predicted by a freshly fine-tuned splice site head on just two samples are sparser and differently distributed, likely placing it outside its operating range. Looking at the loss values pointed to a related problem — the junction cross-entropy was going negative during training, which would destabilize any head but hit the pretrained one harder.
 
@@ -130,7 +130,7 @@ The root cause is a mismatch between the paper's pseudocode and both the JAX and
 
 We opened a GitHub issue with the authors, who confirmed the discrepancy and introduced a ratio-normalized formulation: both targets and predictions are divided by their within-mask sums before computing `-p_true * log(p_pred)`. We ported this as `--junction-loss normalized`. Since `p_pred <= 1`, its log is always non-positive and the loss is always non-negative. With this correction, training is stable, the loss no longer dips below zero on sparse windows, and both random and pretrained-weight initialization can overfit the single interval regardless of whether annotated or predicted splice site positions are used.
 
-![Debugging splice junction head loss](splice_junctions_debug-loss.png "width=1000")
+![Debugging splice junction head loss](splice_junctions_debug-loss.png "width=700")
 
 ## Limitations
 
