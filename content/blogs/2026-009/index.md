@@ -51,7 +51,7 @@ DeepMind has released [AlphaGenome](https://deepmind.google/discover/blog/alphag
 
 In this post, we share that development process: preprocessing the data, building loaders, running sanity checks, and overfitting a single interval, including the bugs we found along the way and how we fixed them.
 
-All code, model adaptations, and pipelines used for this blog post are [available](https://github.com/MiqG/alphagenome_finetuning_rna/tree/v1.0.0).
+All code, model adaptations, and pipelines used for this blog post are [available](https://github.com/MiqG/alphagenome_finetuning_rna/tree/v1.0.1).
 
 {{< /summary >}}
 
@@ -156,7 +156,7 @@ In the end, this project became more than a simple port. It resulted in reusable
 
 ## Reproducibility
 
-The repository [alphagenome_finetuning_rna](https://github.com/MiqG/alphagenome_finetuning_rna/tree/v1.0.0) contains all the necessary code, from data downloading to analysis and figures, to reproduce these results.
+The repository [alphagenome_finetuning_rna](https://github.com/MiqG/alphagenome_finetuning_rna/tree/v1.0.1) contains all the necessary code, from data downloading to analysis and figures, to reproduce these results.
 
 ## References
 
