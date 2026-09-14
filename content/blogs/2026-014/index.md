@@ -45,10 +45,6 @@ revision_history:
     zenodo_url: ""
 ---
 
-**Contributions**:
-- Miquel Anglada-Girotto and Federico Billeci contributed equally to this work.
-- Jonathan Frazer and Mafalda Dias jointly supervised this work.
-
 {{< summary >}}
 Sequence-to-function models such as AlphaGenome can predict the effects of individual genetic variants on gene expression, but personal genomes contain thousands of variants that must be interpreted together. How models combine these effects remains poorly understood and is relevant for personal genome prediction.
 
@@ -79,7 +75,7 @@ For this experiment, we focused on the 1-Mb genomic window containing HBB, which
 
 We constructed personalized sequences for 1,842 individuals from the 1000 Genomes Project [6]. Within this 1-Mb window, each individual differed from the reference genome at an average of 2,828 variants (Fig. 1).
 
-![Figure 1. Variant burden across personal genomes within the HBB 1-Mb window.](fig1-variant_burden.png "width=700 Variant burden across personal genomes within the HBB 1-Mb window.")
+![Figure 1. Variant burden across personal genomes within the HBB 1-Mb window.](fig1-variant_burden.png "width=708 Variant burden across personal genomes within the HBB 1-Mb window.")
 
 For every individual, we then compared two quantities:
 - **Combined-variant prediction:** the AlphaGenome predicted change in expression obtained after introducing all of that individual's variants into the sequence simultaneously.
@@ -91,7 +87,7 @@ Although AlphaGenome provides predictions for thousands of output tracks, we foc
 
 The distributions of the two predictions look strikingly different. The combined-variant predictions form a multimodal distribution, whereas the sum of all single-variant effects produces a broader, smoother distribution (Fig. 2).
 
-![Figure 2. Combined versus summed variant effects.](fig2-whole_vs_sum-all.png "width=700 Combined versus summed variant effects.")
+![Figure 2. Combined versus summed variant effects.](fig2-whole_vs_sum-all.png "width=493 Combined versus summed variant effects.")
 
 The two quantities are nevertheless correlated across individuals (Pearson correlation = 0.67), showing that the single-variant predictions contain substantial information about the personalized-sequence prediction. However, the summed single-variant effects are generally more extreme.
 
@@ -101,13 +97,13 @@ In other words, simply adding the predicted effect of every variant appears to o
 
 To test this, for each individual we ranked variants by the absolute magnitude of their predicted single-variant effect. We then progressively summed the top K variants and asked how well each partial sum reproduced the prediction obtained from the full personalized sequence (Fig. 3).
 
-![Figure 3. A few strong variants recapitulate the combined prediction.](fig3-correl_topk-hbb.png "width=500 A few strong variants recapitulate the combined prediction.")
+![Figure 3. A few strong variants recapitulate the combined prediction.](fig3-correl_topk-hbb.png "width=344 A few strong variants recapitulate the combined prediction.")
 
 Using only the strongest few single-variant effects reproduces most of the variation in AlphaGenome's combined-variant predictions. Performance peaks very quickly and then declines as increasingly weaker variants are added to the sum.
 
 Summing only the top three single-variant effects per individual produces a Pearson correlation of 0.95 with the full combined-variant prediction. The distribution of these top-three sums also closely resembles the multimodal distribution produced by the personalized sequence predictions (Fig. 4).
 
-![Figure 4. Three variants nearly recapitulate HBB combined prediction.](fig4-whole_vs_sum-top3.png "width=700 Three variants nearly recapitulate HBB combined prediction.")
+![Figure 4. Three variants nearly recapitulate HBB combined prediction.](fig4-whole_vs_sum-top3.png "width=487 Three variants nearly recapitulate HBB combined prediction.")
 
 So, at least for HBB and this whole-blood output, AlphaGenome's prediction for a sequence containing thousands of variants can be approximated remarkably well using only a handful of its strongest single-variant predictions.
 
@@ -143,6 +139,10 @@ The repository [wigttsoip](https://github.com/MiqG/wigttsoip) contains all the n
 4. DeepMind. AlphaGenome Atlas: a predictive map of every possible DNA letter change in the human genome. (2026). https://deepmind.google/blog/alphagenome-atlas-a-predictive-map-of-every-possible-dna-letter-change-in-the-human-genome/
 5. Avsec, Ž. et al. Advancing regulatory variant effect prediction with AlphaGenome., Nature (2026). https://doi.org/10.1038/s41586-025-10014-0
 6. Byrska-Bishop, M. et al. High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios., Cell (2022). https://doi.org/10.1016/j.cell.2022.08.004
+
+## Contributions
+- Miquel Anglada-Girotto and Federico Billeci contributed equally to this work.
+- Jonathan Frazer and Mafalda Dias jointly supervised this work.
 
 ## Acknowledgements
 
