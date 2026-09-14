@@ -129,7 +129,7 @@ Resources such as the AlphaGenome Atlas make experiments like this much easier. 
 
 ## Reproducibility
 
-The repository [wigttsoip](https://github.com/MiqG/wigttsoip) contains all the necessary code, from data downloading to analysis and figures, to reproduce these results.
+The repository [wigttsoip](https://github.com/DiasFrazerGroup/wigttsoip) contains all the necessary code, from data downloading to analysis and figures, to reproduce these results.
 
 ## References
 
