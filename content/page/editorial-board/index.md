@@ -36,7 +36,7 @@ The Editorial Board oversees content review and maintains scientific and communi
 * Provide structured feedback to authors
 * Ensure scientific accuracy and clarity
 * Enforce submission and community guidelines
-* **Ensure each post is tagged with at least one discipline before approval** (e.g. Sequence-to-Function Modeling, Single-cell Modeling, Synthetic Biology) so it surfaces under the [homepage Discipline filter](/)
+* **Ensure each post is tagged with at least one discipline before approval** (e.g. Sequence-to-Function Modeling, Single-cell Modeling, Synthetic Biology, AI Agents) so it surfaces under the [homepage Discipline filter](/)
 * Editorial decisions are made collaboratively when needed.
 
 Review follows the [Minimal Editorial Review (MVR) framework](/editorial-review/). Editorial decisions are made collaboratively when needed.
@@ -44,6 +44,12 @@ Review follows the [Minimal Editorial Review (MVR) framework](/editorial-review/
 ### Current Editorial Board
 
 {{< editors-list >}}
+
+### Past Editorial Board
+
+With gratitude to former members of the Editorial Board for their service.
+
+{{< past-editors >}}
 
 ### Becoming Involved
 

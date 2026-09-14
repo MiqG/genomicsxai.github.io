@@ -77,7 +77,7 @@ editor: "Editor Name"
 tags: ["genomics", "foundation-models"]
 categories: ["Blog Post"]
 scope: ["insights"]
-audience: ["within-field"]
+audience: ["technical"]
 labs: ["Example Lab"]
 status: "accepted"
 revision: 2
@@ -104,9 +104,11 @@ revision_history:
 
 Multiple levels of tagging; the homepage and lists support filtering by these.
 
-Examples: `genomics`, `spatial-omics`, `single-cell`, `diffusion-models`, `causal-inference`, `multi-modal`, `foundation-models`.
+Examples: `genomics`, `spatial-omics`, `single-cell`, `diffusion-models`, `causal-inference`, `multi-modal`, `foundation-models`, `AI-Agents`.
 
 Included in the frontmatter as: `tags: ["genomics", "causal-inference"]`.
+
+Some tags are elevated to first-class **disciplines** (curated in `data/disciplines.yaml`) and power the homepage Discipline filter. A post can belong to more than one discipline — just include each discipline's tag (e.g. `tags: ["single-cell", "AI-Agents"]`) and it will surface under all of them.
 
 ### 4.3 Scope
 
@@ -116,7 +118,7 @@ Choices: **protocols**, **tutorials**, **negative-results**, **discussions**, **
 
 ### 4.4 Audience
 
-Within-field, general, intro-to-field.
+New to field, general, technical. Powers the homepage Audience filter.
 
 ### 4.5 Lab
 
@@ -130,12 +132,13 @@ Writer of the post. Author pages at `/authors/<slug>/` (affiliation, ORCID, webs
 
 Determines which homepage pill filter a post appears under.
 
-Supported values: **Announcement**, **Blog Post**, **Tutorial**, **Perspective**.
+Supported values: **Announcement**, **Blog Post**, **Tutorial**, **Perspective**, **Paper Reviews**.
 
 - `Announcement` — editorial and community announcements (appears under the **Announcements** pill)
 - `Blog Post` — standard research write-ups (appears under the **Blogs** pill)
 - `Tutorial` — step-by-step technical guides (appears under the **Tutorials** pill)
 - `Perspective` — opinion pieces, field commentary (appears under the **Perspectives** pill)
+- `Paper Reviews` — write-ups summarising or critiquing a published paper (appears under the **Paper Reviews** pill)
 
 The homepage pill bar reads the `categories` taxonomy only, not `scope`. A post with `scope: ["tutorials"]` but `categories: ["Blog Post"]` will appear under the Blogs pill, not Tutorials.
 

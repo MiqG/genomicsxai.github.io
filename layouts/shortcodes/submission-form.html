@@ -146,6 +146,58 @@
       </div>
 
       <div class="submit-form__field">
+        <label class="submit-form__label submit-form__label--required">Category</label>
+        <span class="submit-form__help">Which homepage pill your post appears under. Default is <strong>Blog Post</strong> — pick another only if it clearly fits.</span>
+        <div class="submit-form__radio-group">
+          <div class="submit-form__radio-item">
+            <label class="submit-form__radio">
+              <input type="radio" name="sf-category" value="Announcement" class="submit-form__editable">
+              <span class="submit-form__radio-label">
+                Announcement
+                <span class="submit-form__radio-note">Editorial and community announcements.</span>
+              </span>
+            </label>
+          </div>
+          <div class="submit-form__radio-item">
+            <label class="submit-form__radio">
+              <input type="radio" name="sf-category" value="Blog Post" class="submit-form__editable" checked>
+              <span class="submit-form__radio-label">
+                Blog Post <em>(default)</em>
+                <span class="submit-form__radio-note">Standard research write-ups.</span>
+              </span>
+            </label>
+          </div>
+          <div class="submit-form__radio-item">
+            <label class="submit-form__radio">
+              <input type="radio" name="sf-category" value="Tutorial" class="submit-form__editable">
+              <span class="submit-form__radio-label">
+                Tutorial
+                <span class="submit-form__radio-note">Step-by-step technical guides.</span>
+              </span>
+            </label>
+          </div>
+          <div class="submit-form__radio-item">
+            <label class="submit-form__radio">
+              <input type="radio" name="sf-category" value="Perspective" class="submit-form__editable">
+              <span class="submit-form__radio-label">
+                Perspective
+                <span class="submit-form__radio-note">Opinion pieces, field commentary.</span>
+              </span>
+            </label>
+          </div>
+          <div class="submit-form__radio-item">
+            <label class="submit-form__radio">
+              <input type="radio" name="sf-category" value="Paper Reviews" class="submit-form__editable">
+              <span class="submit-form__radio-label">
+                Paper Reviews
+                <span class="submit-form__radio-note">Summaries or critiques of a published paper.</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-form__field">
         <label class="submit-form__label submit-form__label--required">Scope</label>
         <div class="submit-form__checkbox-group">
           <label class="submit-form__checkbox"><input type="checkbox" id="sf-scope-protocols" class="submit-form__editable"> protocols</label>
@@ -161,16 +213,16 @@
       <div class="submit-form__field">
         <label class="submit-form__label">Audience</label>
         <div class="submit-form__checkbox-group">
-          <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-within-field" class="submit-form__editable"> within-field</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-technical" class="submit-form__editable"> technical</label>
           <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-general" class="submit-form__editable"> general</label>
-          <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-intro-to-field" class="submit-form__editable"> intro-to-field</label>
+          <label class="submit-form__checkbox"><input type="checkbox" id="sf-audience-new-to-field" class="submit-form__editable"> new-to-field</label>
         </div>
         <div id="sf-error-audience" class="submit-form__field-error" hidden></div>
       </div>
 
       <div class="submit-form__field">
         <label class="submit-form__label submit-form__label--required">Discipline</label>
-        <span class="submit-form__help">At least one required — promotes your post under the homepage Discipline filter.</span>
+        <span class="submit-form__help">At least one required — select all that apply. Promotes your post under the homepage Discipline filter(s).</span>
         <div class="submit-form__checkbox-group">
           {{- range $.Site.Data.disciplines }}
           <label class="submit-form__checkbox"><input type="checkbox" class="submit-form__editable submit-form__discipline" data-slug="{{ .slug }}" id="sf-discipline-{{ .slug }}"> {{ .label }}</label>
@@ -188,12 +240,6 @@
       <div class="submit-form__field">
         <label class="submit-form__label" for="sf-date">Date</label>
         <input type="date" id="sf-date" class="submit-form__input" readonly>
-      </div>
-
-      <div class="submit-form__field">
-        <label class="submit-form__checkbox">
-          <input type="checkbox" id="sf-math" class="submit-form__editable"> Post uses LaTeX math equations
-        </label>
       </div>
     </div>
 
@@ -230,7 +276,7 @@
       <!-- Image upload, co-located with the body -->
       <div id="submit-form__images-subsection" class="submit-form__body-images">
         <h4 class="submit-form__subsection-title">Images</h4>
-        <p class="submit-form__help">Upload images you want to embed. Max 10 MB per file, 50 MB total. Type an optional <strong>caption</strong> next to each thumbnail (shown as the figure legend on the published page), then click <strong>Insert</strong> to drop a placeholder into the text above.</p>
+        <p class="submit-form__help">Upload images you want to embed. Max 10 MB per file, 50 MB total. Type an optional <strong>caption</strong> next to each thumbnail (shown as the figure legend on the published page), then click <strong>Insert</strong> to drop a placeholder into the text above. Click <strong>☆ Featured</strong> on any image to use it as the post's thumbnail (sets <code>image:</code> in the frontmatter).</p>
 
         <!-- Existing images carried over from the published post (update mode only) -->
         <div id="submit-form__existing-images-wrap" class="submit-form__existing-images" hidden>
@@ -249,6 +295,9 @@
 
     <!-- Submit -->
     <div id="submit-form__actions" class="submit-form__section">
+      <div id="submit-form__missing-summary" class="submit-form__missing-summary" hidden>
+        Please complete: <span id="submit-form__missing-list"></span>
+      </div>
       <button type="button" id="submit-form__submit-btn" class="submit-form__btn submit-form__btn--primary submit-form__btn--large" disabled>
         Submit Blog Post
       </button>

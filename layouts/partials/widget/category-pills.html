@@ -1,27 +1,33 @@
-{{- /* Two-tier filter bar.
+{{- /* Three-tier filter bar.
 
      Row 1 — Categories (curated set of 4 article categories)
      Row 2 — Disciplines (curated set defined in data/disciplines.yaml)
+     Row 3 — Audience (curated set defined in data/audience.yaml)
 
      Active pill is derived from the current page:
-       - Homepage                    → "All" in Category row
+       - Homepage                    → "All" in every row
        - /categories/<slug>/         → that pill in Category row
        - /tags/<discipline-slug>/    → that pill in Discipline row
+       - /audience/<slug>/           → that pill in Audience row
        - any other archive           → no pill active
 
      On the homepage the script in home.html upgrades these pills to in-place
-     filter buttons (Category AND Discipline). On archive pages the script is
-     not loaded, so pills act as plain navigation links. */ -}}
+     filter buttons (Category AND Discipline AND Audience). On archive pages
+     the script is not loaded, so pills act as plain navigation links. */ -}}
 
 {{- $currentCat := "" -}}
 {{- $currentDisc := "" -}}
+{{- $currentAudience := "" -}}
 {{- if .IsHome -}}
   {{- $currentCat = "all" -}}
   {{- $currentDisc = "all" -}}
+  {{- $currentAudience = "all" -}}
 {{- else if and (eq .Kind "term") (eq .Type "categories") -}}
   {{- $currentCat = .Data.Term | urlize -}}
 {{- else if and (eq .Kind "term") (eq .Type "tags") -}}
   {{- $currentDisc = .Data.Term | urlize -}}
+{{- else if and (eq .Kind "term") (eq .Type "audience") -}}
+  {{- $currentAudience = .Data.Term | urlize -}}
 {{- end -}}
 
 <div class="category-filters">
@@ -31,12 +37,13 @@
     <a href="{{ site.Home.RelPermalink }}"
        class="category-pills__pill{{ if eq $currentCat "all" }} category-pills__pill--active{{ end }}"
        data-filter="all">All</a>
-    {{- range $cat := slice "Announcement" "Blog Post" "Tutorial" "Perspective" -}}
+    {{- range $cat := slice "Announcement" "Blog Post" "Tutorial" "Perspective" "Paper Reviews" -}}
       {{- $slug := . | urlize -}}
       {{- $label := "Perspectives" -}}
       {{- if eq . "Announcement" }}{{ $label = "Announcements" }}
       {{- else if eq . "Blog Post" }}{{ $label = "Blogs" }}
       {{- else if eq . "Tutorial" }}{{ $label = "Tutorials" }}
+      {{- else if eq . "Paper Reviews" }}{{ $label = "Paper Reviews" }}
       {{- end -}}
       {{- $isActive := eq $currentCat $slug -}}
       {{- $termPage := site.GetPage (printf "/categories/%s" $slug) -}}
@@ -56,8 +63,33 @@
        class="category-pills__pill{{ if eq $currentDisc "all" }} category-pills__pill--active{{ end }}"
        data-filter="all">All</a>
     {{- range site.Data.disciplines }}
-      {{- $isActive := eq $currentDisc .slug -}}
-      {{- $termPage := site.GetPage (printf "/tags/%s" .slug) -}}
+      {{- /* canonical slug + any aliases all count toward this discipline */ -}}
+      {{- $slugs := slice .slug -}}
+      {{- with .aliases }}{{ $slugs = $slugs | append . }}{{ end -}}
+      {{- $isActive := in $slugs $currentDisc -}}
+      {{- /* link to the first alias that has a real tag-archive page (prefer canonical) */ -}}
+      {{- $termPage := false -}}
+      {{- range $slugs -}}
+        {{- if not $termPage -}}{{- with site.GetPage (printf "/tags/%s" .) }}{{ $termPage = . }}{{ end -}}{{- end -}}
+      {{- end -}}
+      {{- if $termPage }}
+    <a href="{{ $termPage.Permalink }}"
+       class="category-pills__pill{{ if $isActive }} category-pills__pill--active{{ end }}"
+       data-filter="{{ .slug }}" data-filter-aliases="{{ delimit $slugs " " }}">{{ .label }}</a>
+      {{- else }}
+    <span class="category-pills__pill category-pills__pill--empty" data-filter="{{ .slug }}" data-filter-aliases="{{ delimit $slugs " " }}" aria-disabled="true">{{ .label }}</span>
+      {{- end -}}
+    {{- end }}
+  </div>
+
+  <div class="category-pills category-pills--audience" data-filter-group="audience" role="group" aria-label="Filter by audience">
+    <span class="category-pills__group-label" aria-hidden="true">Audience</span>
+    <a href="{{ site.Home.RelPermalink }}"
+       class="category-pills__pill{{ if eq $currentAudience "all" }} category-pills__pill--active{{ end }}"
+       data-filter="all">All</a>
+    {{- range site.Data.audience }}
+      {{- $isActive := eq $currentAudience .slug -}}
+      {{- $termPage := site.GetPage (printf "/audience/%s" .slug) -}}
       {{- if $termPage }}
     <a href="{{ $termPage.Permalink }}"
        class="category-pills__pill{{ if $isActive }} category-pills__pill--active{{ end }}"

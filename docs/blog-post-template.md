@@ -29,18 +29,19 @@ editor: "Editor Name"
 # Add any number of tags. They're searchable on the blog homepage. See https://genomicsxai.github.io/tags/ for examples.
 tags: ["genomics", "causal-inference"]
 # Category determines which homepage pill filter the post appears under.
-# Supported values: "Announcement", "Blog Post", "Tutorial", "Perspective"
-#   - "Announcement" → appears under the Announcements pill (editorial/community announcements)
-#   - "Blog Post"    → appears under the Blogs pill (default for most posts)
-#   - "Tutorial"     → appears under the Tutorials pill (step-by-step technical guides)
-#   - "Perspective"  → appears under the Perspectives pill (opinion pieces, commentary)
+# Supported values: "Announcement", "Blog Post", "Tutorial", "Perspective", "Paper Reviews"
+#   - "Announcement"  → appears under the Announcements pill (editorial/community announcements)
+#   - "Blog Post"     → appears under the Blogs pill (default for most posts)
+#   - "Tutorial"      → appears under the Tutorials pill (step-by-step technical guides)
+#   - "Perspective"   → appears under the Perspectives pill (opinion pieces, commentary)
+#   - "Paper Reviews" → appears under the Paper Reviews pill (summaries/critiques of a published paper)
 # Note: the homepage pills filter by `categories` only, not by `scope`.
 categories: ["Blog Post"]
 
 # One or more: protocols, tutorials, negative-results, discussions, insights, ideas
 scope: ["insights"]
-# One or more: within-field, general, intro-to-field
-audience: ["within-field"]
+# One or more: technical, general, new-to-field
+audience: ["technical"]
 labs: ["Your Lab Name"]
 
 status: "submitted"
@@ -85,3 +86,29 @@ Maintainers can also populate DOI metadata automatically at deploy time via `dat
 See [BLOG_SPEC.md](./BLOG_SPEC.md) for full frontmatter and tag options.
 
 ## References
+
+End every post with a numbered References section citing the primary literature
+it builds on, giving each entry a DOI or publisher link where one exists:
+
+```markdown
+## References
+
+1. Avsec, Ž. et al. Advancing regulatory variant effect prediction with AlphaGenome. *Nature*, 649, 1206–1218 (2026). https://doi.org/10.1038/s41586-025-10014-0
+2. Linder, J. et al. Predicting RNA-seq coverage from DNA sequence as a unifying model of gene regulation. *Nature Genetics*, 57, 949–961 (2025). https://doi.org/10.1038/s41588-024-02053-6
+```
+
+Write the numbers as `1.`, `2.` — **not** `1\.`, `2\.`. The escaped form looks
+fine in the source but renders as plain paragraphs instead of a numbered list,
+which is what a parser looks for. Check the built preview shows a real list.
+
+This is not required for acceptance, but it appears to matter for whether the
+post shows up in Google Scholar. Scholar only indexes documents it classifies
+as scholarly articles, and a bibliography seems to be one of the signals it
+uses. We can't see Google's classifier, so treat this as an observation rather
+than a rule — but across our own posts, every indexed one ends with a rendered
+numbered list of five or more references, and the ones still missing had four or
+fewer (or a bibliography that wasn't rendering as a list), independent of
+length, date, or authorship. The DOIs themselves don't appear to be the deciding
+factor: our earliest indexed post has none. See the
+[submission
+guidelines](https://genomicsxai.github.io/submission-guidelines/#why-references-matter-for-google-scholar).

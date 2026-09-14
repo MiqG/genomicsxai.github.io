@@ -19,6 +19,10 @@ jobs:
   send-digest:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      issues: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -27,36 +31,18 @@ jobs:
         run: |
           DAYS_BACK="${{ github.event.inputs.days_back || 7 }}"
           python3 - <<'PYEOF'
-          import os, json, re, sys, subprocess
+          import os, json, re, sys
           from datetime import datetime, timedelta, timezone
 
           days_back = int(os.environ.get("DAYS_BACK", 7))
-          cutoff = datetime.now(timezone.utc) - timedelta(days=days_back)
+          now = datetime.now(timezone.utc)
+          cutoff = now - timedelta(days=days_back)
           posts = []
 
           blogs_dir = "content/blogs"
           for slug in sorted(os.listdir(blogs_dir)):
               path = os.path.join(blogs_dir, slug, "index.md")
               if not os.path.exists(path):
-                  continue
-
-              # Get the initial commit date of the post (when it was first added)
-              try:
-                  result = subprocess.run(
-                      ["git", "log", "--follow", "--pretty=format:%ci", "--", path],
-                      capture_output=True, text=True, check=True
-                  )
-                  commit_dates = result.stdout.strip().split('\n')
-                  if not commit_dates or not commit_dates[-1]:
-                      continue
-                  # Use the oldest commit date (initial add)
-                  initial_commit_date_str = commit_dates[-1]
-                  post_date = datetime.strptime(initial_commit_date_str, "%Y-%m-%d %H:%M:%S %z")
-                  post_date = post_date.astimezone(timezone.utc)
-              except (subprocess.CalledProcessError, ValueError, IndexError):
-                  continue
-
-              if post_date < cutoff:
                   continue
 
               with open(path, "r", encoding="utf-8") as f:
@@ -67,6 +53,29 @@ jobs:
               if not fm_match:
                   continue
               fm = fm_match.group(1)
+
+              # Skip withdrawn posts — retracted content must never be emailed.
+              status_match = re.search(r"^status:\s*(.+)$", fm, re.MULTILINE)
+              status = status_match.group(1).strip().strip('"').strip("'").lower() if status_match else ""
+              if status == "withdrawn":
+                  continue
+
+              # "New" is decided by the frontmatter `date` (the go-live / accepted
+              # date), NOT the git commit date of index.md: posts are drafted in the
+              # repo and reviewed for weeks before they go live, so the initial
+              # commit predates publication by far more than the 7-day window.
+              date_match = re.search(r"^date:\s*(.+)$", fm, re.MULTILINE)
+              if not date_match:
+                  continue
+              date_str = date_match.group(1).strip().strip('"').strip("'").split()[0]
+              try:
+                  post_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+              except ValueError:
+                  continue
+
+              # Outside the window: too old, or future-dated (not live yet).
+              if post_date < cutoff or post_date > now:
+                  continue
 
               # Title
               title_match = re.search(r"^title:\s*(.+)$", fm, re.MULTILINE)
@@ -99,10 +108,6 @@ jobs:
                   summary = " ".join(summary.split())
               else:
                   summary = ""
-
-              # Date from frontmatter for display
-              date_match = re.search(r"^date:\s*(.+)$", fm, re.MULTILINE)
-              date_str = date_match.group(1).strip().strip('"').strip("'").split()[0] if date_match else initial_commit_date_str[:10]
 
               posts.append({
                   "title": title,
@@ -143,17 +148,71 @@ jobs:
           fi
 
           python3 - <<'PYEOF'
-          import json, os, urllib.request, urllib.error
+          import json, os, sys, urllib.request, urllib.error
+          from datetime import datetime, timezone
 
           posts = json.load(open("/tmp/new_posts.json"))
           status = os.environ["STATUS"]
           api_key = os.environ["BUTTONDOWN_API_KEY"]
+          # Active-subscriber ceiling of the current Buttondown plan. Used only
+          # for reporting — Buttondown itself is the authority and will reject
+          # the send. Kept here so a blocked digest can say *why* it blocked.
+          limit = int(os.environ.get("SUBSCRIBER_LIMIT", "100"))
+
+
+          def annotate(level, message):
+              """Emit a GitHub Actions annotation (surfaces on the run summary)."""
+              print(f"::{level}::" + message.replace("\n", "%0A"))
+
+
+          def summary(markdown):
+              """Append to the run's job summary, if we're on a runner."""
+              path = os.environ.get("GITHUB_STEP_SUMMARY")
+              if not path:
+                  return
+              with open(path, "a", encoding="utf-8") as f:
+                  f.write(markdown + "\n")
+
+
+          def active_subscribers():
+              """Count of 'regular' (confirmed, active) subscribers — the figure
+              Buttondown measures the plan against. Returns None if it can't be
+              read: a failed head-count is diagnostic only and must never block
+              a send that would otherwise succeed."""
+              req = urllib.request.Request(
+                  "https://api.buttondown.email/v1/subscribers?type=regular",
+                  headers={"Authorization": f"Token {api_key}"},
+              )
+              try:
+                  with urllib.request.urlopen(req) as resp:
+                      return json.loads(resp.read()).get("count")
+              except Exception as err:
+                  print(f"Could not read subscriber count ({err}) — continuing anyway.")
+                  return None
+
+
+          # NB: named `subscriber_count`, not `count` — `count` is reused below
+          # for the number of posts in this digest.
+          subscriber_count = active_subscribers()
+          if subscriber_count is not None:
+              print(f"Subscribers: {subscriber_count} active / {limit} allowed on the current plan")
+              if subscriber_count >= limit:
+                  annotate("warning", f"Subscriber list ({subscriber_count}) has reached the plan ceiling ({limit}) — this send is expected to be rejected.")
+              elif subscriber_count >= limit * 0.8:
+                  annotate("warning", f"Subscriber list at {subscriber_count}/{limit} — approaching the plan ceiling. Upgrade before it blocks a digest.")
+
+          # Date suffix on every subject so Buttondown's email_duplicate
+          # dedup check (HTTP 400) doesn't reject this week's digest when a
+          # previous week's subject was identical — most often the multi-post
+          # case "...: N new posts", which would otherwise collide whenever
+          # N happens to be the same N weeks in a row.
+          today_iso = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
           count = len(posts)
           if count == 1:
-              subject = f"New on Genomics × AI: {posts[0]['title']}"
+              subject = f"New on Genomics × AI: {posts[0]['title']} ({today_iso})"
           else:
-              subject = f"New on Genomics × AI: {count} new posts"
+              subject = f"New on Genomics × AI: {count} new posts ({today_iso})"
 
           # Build HTML email
           lines = [
@@ -199,14 +258,116 @@ jobs:
               },
               method="POST",
           )
+          missed = "\n".join(f"- {p['title']} — {p['url']}" for p in posts)
+
+
+          def fail_over_limit(detail_text):
+              """Explain a plan-ceiling rejection: what blocked, what did not go
+              out, and the exact steps to recover the missed digest."""
+              seen = subscriber_count if subscriber_count is not None else "unknown"
+              annotate(
+                  "error",
+                  f"Newsletter NOT sent — {seen} subscribers exceeds the {limit}-subscriber "
+                  f"ceiling of the current Buttondown plan. {len(posts)} post(s) went unannounced.",
+              )
+              summary(
+                  "## ❌ Newsletter blocked — subscriber limit reached\n\n"
+                  f"**{seen}** active subscribers against a plan ceiling of **{limit}**.\n\n"
+                  f"Buttondown said:\n\n> {detail_text}\n\n"
+                  f"### {len(posts)} post(s) NOT announced\n\n"
+                  f"{missed}\n\n"
+                  "### How to fix\n\n"
+                  "1. Upgrade the plan at <https://buttondown.com/settings/billing> "
+                  "(Basic covers 1,000 subscribers).\n"
+                  "2. Raise `SUBSCRIBER_LIMIT` in `.github/workflows/newsletter.yml` to the "
+                  "new ceiling (e.g. `1000`).\n"
+                  "3. Re-run this workflow (*Run workflow*) with `dry_run: false` and a "
+                  "`days_back` wide enough to re-include the posts above, so the missed "
+                  "digest actually goes out.\n\n"
+                  "Background: https://github.com/genomicsxai/genomicsxai.github.io/issues/119\n"
+              )
+              bar = "=" * 70
+              print(f"\n{bar}")
+              print("NEWSLETTER NOT SENT — SUBSCRIBER LIMIT REACHED")
+              print(bar)
+              print(f"Active subscribers : {seen}")
+              print(f"Plan ceiling       : {limit}")
+              print(f"Buttondown said    : {detail_text}")
+              print(f"\n{len(posts)} post(s) NOT announced:")
+              print(missed)
+              print("\nTo recover: upgrade the plan, raise SUBSCRIBER_LIMIT in this")
+              print("workflow, then re-run with dry_run=false and a wider days_back.")
+              print(bar)
+
+
           try:
               with urllib.request.urlopen(req) as resp:
                   result = json.loads(resp.read())
                   print(f"Email created (status={status}): id={result.get('id','?')}, subject={result.get('subject','?')}")
           except urllib.error.HTTPError as e:
-              print(f"API error {e.code}: {e.read().decode()}")
+              raw = e.read().decode()
+              try:
+                  detail_text = json.loads(raw).get("detail", raw)
+              except ValueError:
+                  detail_text = raw
+              # Buttondown reports the plan ceiling as a 400 carrying code
+              # "email_invalid" — the same code it uses for genuinely malformed
+              # emails, so match on the message text, not the code.
+              if e.code == 400 and "exceeds the limits of your plan" in detail_text:
+                  fail_over_limit(detail_text)
+                  sys.exit(1)
+              annotate("error", f"Buttondown API error {e.code}: {detail_text}")
+              print(f"API error {e.code}: {raw}")
               raise
           PYEOF
         env:
           BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
           STATUS: ${{ (github.event.inputs.dry_run == 'true' && 'draft') || (github.event_name == 'workflow_dispatch' && 'draft') || 'about_to_send' }}
+          # Active-subscriber ceiling of the current Buttondown plan.
+          # Basic (current) = 1000. Free was 100; Standard would be 5000.
+          # Reporting only — Buttondown enforces the real limit.
+          SUBSCRIBER_LIMIT: 1000
+
+      # A failed scheduled run notifies only the workflow's last committer, which
+      # is how the 2026-08-10 plan-limit failure sat unnoticed until someone went
+      # looking. Scheduled runs only: a manual run already has a human watching.
+      - name: Open an issue if the scheduled digest failed
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE="Weekly newsletter digest is failing"
+
+          # Reuse one open issue rather than filing a fresh one every Monday.
+          NUM=$(gh issue list --state open --limit 100 --json number,title \
+                --jq 'map(select(.title == "Weekly newsletter digest is failing")) | first | .number // empty')
+
+          if [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --body "Failed again on $(date -u '+%Y-%m-%d'). [Run details]($RUN_URL)"
+            echo "Commented on existing issue #$NUM"
+          else
+            gh issue create --title "$TITLE" --body "$(cat <<EOF
+          The weekly newsletter digest failed, so any posts published in the last
+          week have **not** been announced to subscribers.
+
+          [Run details]($RUN_URL) — the job summary there states the cause, and for
+          a plan-limit rejection it lists the specific posts that went unannounced
+          and how to recover them.
+
+          Common causes:
+
+          - **Subscriber limit reached** — upgrade the plan, then raise
+            \`SUBSCRIBER_LIMIT\` in \`.github/workflows/newsletter.yml\`.
+          - **Expired \`BUTTONDOWN_API_KEY\`** — reissue it and update the repo secret.
+
+          To send a missed digest once fixed: run the workflow manually with
+          \`dry_run: false\` and a \`days_back\` wide enough to re-include the posts,
+          but not so wide that it re-announces ones already sent.
+
+          This issue is reused for subsequent failures — close it once the digest
+          sends cleanly.
+          EOF
+          )"
+            echo "Opened a new issue"
+          fi

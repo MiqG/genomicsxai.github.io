@@ -22,14 +22,14 @@ authors_display:
     affiliation: "Cold Spring Harbor Labs (CSHL)"
     orcid: "0000-0001-8722-0038"
 
-editor: "Editor Name"
+editor: ["Al-Murphy", "abuendia"]
 
 tags: ["genomics", "fine-tuning","MPRA","seq2func"]
 categories: ["Blog Post"]
 
 # One or more: protocols, tutorials, negative-results, discussions, insights, ideas
 scope: ["insights"]
-# One or more: within-field, general, intro-to-field
+# One or more: technical, general, new-to-field
 audience: ["general"]
 labs: ["Koo lab"]
 
@@ -100,7 +100,7 @@ Modern seq2func models like AlphaGenome can be decomposed into three functional 
 
 For short perturbation sequences assayed in isolation — such as MPRA constructs that test _cis_-regulatory activity outside their native chromosomal context — long-range genomic interactions are largely absent, so distal context modeling is often unnecessary. The encoder, however, contains rich regulatory representations learned from genome-scale supervision. We extract and reuse this encoder - see the image below:
 
-![Generalist seq2func models as modular regulatory encoders](modular_generalists_manuscript.png "width=1000 Generalist seq2func models as modular regulatory encoders. Left, AlphaGenome's U-Net architecture with encoder, long-range context integration (transformer), and decoder modules. Right, proposed modular view in which the pretrained encoder is extracted as a reusable cis-regulatory representation module and fine-tuned on short, variable-length perturbation sequences such as MPRA constructs, while the transformer and decoder remain in the full stack for tasks requiring long-range context.").
+![Generalist seq2func models as modular regulatory encoders](modular_generalists_manuscript.png "width=1000 Generalist seq2func models as modular regulatory encoders. Left, AlphaGenome's U-Net architecture with encoder, long-range context integration (transformer), and decoder modules. Right, proposed modular view in which the pretrained encoder is extracted as a reusable cis-regulatory representation module and fine-tuned on short, variable-length perturbation sequences such as MPRA constructs, while the transformer and decoder remain in the full stack for tasks requiring long-range context.")
 
 > **Encoder intuition** - In these models, the encoder progressively downsamples the input sequence through convolution and pooling operations, similar to how image CNNs compress spatial resolution while increasing feature richness. As a result, the encoder outputs a sequence of embeddings where each position summarises regulatory features over a window of roughly ~128 bp rather than single nucleotides. This resolution is sufficient to capture motif combinations and local regulatory syntax while keeping representations compact and computationally efficient.
 
